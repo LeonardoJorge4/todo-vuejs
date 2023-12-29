@@ -1,32 +1,43 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { computed, ref } from 'vue';
 import Counter from './components/Counter.vue';
 import Header from './components/Header.vue';
 import Task from './components/Task.vue';
 import { TaskProps } from './@types/Task.type';
 
-const tasksList = reactive<TaskProps[]>([]);
+let tasksList = ref<TaskProps[]>([]);
 const task = ref('');
+const tasksDoneAmount = computed(
+  () => tasksList.value.filter((task) => task.done).length
+);
 
-function addTask(e: Event) {
-  e.preventDefault();
-
+function addTask() {
   if (!task.value) {
     return alert('Informe o título da tarefa para criar!');
   }
 
-  tasksList.push({ id: String(new Date().getTime()), name: task.value });
+  tasksList.value.push({
+    id: String(new Date().getTime()),
+    name: task.value,
+    done: false,
+  });
   task.value = '';
 }
 
+function handleToggleDoneTask(id: string) {
+  tasksList.value = tasksList.value
+    .map((item) => (item.id === id ? { ...item, done: !item.done } : item))
+    .sort((a, b) => Number(b.done) - Number(a.done));
+}
+
 function deleteTask(id: string) {
-  const taskIndex = tasksList.findIndex((task) => task.id === id);
+  const taskIndex = tasksList.value.findIndex((task) => task.id === id);
 
   if (taskIndex < 0) {
     return alert('Tarefa não encontrada!');
   }
 
-  tasksList.splice(taskIndex, 1);
+  tasksList.value.splice(taskIndex, 1);
 }
 </script>
 
@@ -38,7 +49,7 @@ function deleteTask(id: string) {
   >
     <section class="max-w-3xl mx-auto h-full">
       <form
-        @submit="addTask"
+        @submit.prevent="addTask"
         class="flex gap-2 relative top-[-27px]"
       >
         <input
@@ -66,7 +77,7 @@ function deleteTask(id: string) {
           <Counter
             type="purple"
             title="Concluídas"
-            :amount="tasksList.length"
+            :amount="tasksDoneAmount"
           />
         </div>
 
@@ -94,6 +105,7 @@ function deleteTask(id: string) {
               :key="task.id"
               :task="task"
               :onDelete="deleteTask"
+              :onCheck="handleToggleDoneTask"
             />
           </div>
         </div>

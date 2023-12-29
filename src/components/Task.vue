@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { TaskProps } from '../@types/Task.type';
 
-defineProps<{ task: TaskProps; onDelete: (id: string) => void }>();
+defineProps<{
+  task: TaskProps;
+  onDelete: (id: string) => void;
+  onCheck: (id: string) => void;
+}>();
 </script>
 
 <template>
@@ -11,10 +15,12 @@ defineProps<{ task: TaskProps; onDelete: (id: string) => void }>();
     <div class="flex gap-4 items-start">
       <input
         type="checkbox"
-        name="checkbox"
-        id="checkbox"
+        v-on:click="onCheck(task.id)"
       />
-      <p class="text-gray-100 font-medium text-sm">
+      <p
+        :data-isDone="task.done"
+        class="text-gray-100 font-medium text-sm data-[isDone=true]:line-through"
+      >
         {{ task.name }}
       </p>
     </div>
